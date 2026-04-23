@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop — Product Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        header h1 { font-size: 22px; font-weight: 600; color: #fff; }
+
+        header span {
+            background: #4f46e5;
+            color: white;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .card h2 {
+            font-size: 12px;
+            font-weight: 500;
+            color: #aaa;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 12px; color: #888; }
+
+        input {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #e0e0e0;
+            padding: 10px 14px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+
+        input:focus { border-color: #4f46e5; }
+        input::placeholder { color: #555; }
+
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        button:hover { background: #4338ca; }
+
+        .search-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-row input { flex: 1; }
+
+        .btn-secondary { background: #2a2a2a; border: 1px solid #333; }
+        .btn-secondary:hover { background: #333; }
+
+        .products-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .products-header h2 { font-size: 16px; font-weight: 500; }
+
+        .count-badge {
+            background: #2a2a2a;
+            color: #888;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+        }
+
+        thead { background: #111; }
+
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        td {
+            padding: 14px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid #1f1f1f;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #1f1f1f; }
+
+        .price { color: #4ade80; font-weight: 500; font-family: monospace; font-size: 15px; }
+        .desc { color: #666; font-size: 13px; }
+
+        .btn-delete {
+            background: transparent;
+            color: #666;
+            border: 1px solid #2a2a2a;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .btn-delete:hover { background: #2d1a1a; color: #f87171; border-color: #7f1d1d; }
+
+        .empty { text-align: center; padding: 60px 20px; color: #444; }
+        .empty p { font-size: 16px; margin-bottom: 8px; }
+        .empty small { font-size: 13px; }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { border-color: #166534; color: #4ade80; }
+        .toast.error { border-color: #7f1d1d; color: #f87171; }
+        .loading { color: #555; text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🛍 Product Manager</h1>
+    <span>Spring Boot + Docker</span>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Добавить товар</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Название</label>
+                <input type="text" id="name" placeholder="iPhone 15">
+            </div>
+            <div class="form-group">
+                <label>Цена ($)</label>
+                <input type="number" id="price" placeholder="999">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <input type="text" id="description" placeholder="Краткое описание...">
+            </div>
+            <button onclick="createProduct()">+ Добавить</button>
+        </div>
+    </div>
+
+    <div class="search-row">
+        <input type="text" id="searchInput"
+               placeholder="🔍 Поиск по названию..."
+               oninput="handleSearch(this.value)">
+        <button class="btn-secondary" onclick="loadProducts()">Все товары</button>
+    </div>
+
+    <div class="products-header">
+        <h2>Товары</h2>
+        <span class="count-badge" id="countBadge">0 товаров</span>
+    </div>
+
+    <div id="productsContainer">
+        <div class="loading">Загрузка...</div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const API = '/api/products';
+
+    async function loadProducts() {
+        document.getElementById('searchInput').value = '';
+        const res = await fetch(API);
+        const products = await res.json();
+        renderProducts(products);
+    }
+
+    let searchTimer;
+    function handleSearch(query) {
+        clearTimeout(searchTimer);
+        if (!query.trim()) { loadProducts(); return; }
+        searchTimer = setTimeout(async () => {
+            const res = await fetch(`${API}/search?name=${encodeURIComponent(query)}`);
+            const products = await res.json();
+            renderProducts(products);
+        }, 300);
+    }
+
+    async function createProduct() {
+        const name = document.getElementById('name').value.trim();
+        const price = parseFloat(document.getElementById('price').value);
+        const description = document.getElementById('description').value.trim();
+
+        if (!name || !price) { showToast('Заполни название и цену!', 'error'); return; }
+
+        const res = await fetch(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, price, description })
+        });
+
+        if (res.ok) {
+            document.getElementById('name').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('description').value = '';
+            showToast('Товар добавлен!', 'success');
+            loadProducts();
+        } else {
+            showToast('Ошибка при добавлении', 'error');
+        }
+    }
+
+    async function deleteProduct(id, name) {
+        if (!confirm(`Удалить "${name}"?`)) return;
+        const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            showToast('Товар удалён', 'success');
+            loadProducts();
+        }
+    }
+
+    function renderProducts(products) {
+        const container = document.getElementById('productsContainer');
+        document.getElementById('countBadge').textContent = `${products.length} товаров`;
+
+        if (products.length === 0) {
+            container.innerHTML = `
+                <div class="empty">
+                    <p>Товаров пока нет</p>
+                    <small>Добавь первый товар через форму выше</small>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Цена</th>
+                        <th>Описание</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${products.map(p => `
+                        <tr>
+                            <td style="color:#555">#${p.id}</td>
+                            <td><strong>${p.name}</strong></td>
+                            <td><span class="price">$${p.price.toFixed(2)}</span></td>
+                            <td><span class="desc">${p.description || '—'}</span></td>
+                            <td>
+                                <button class="btn-delete"
+                                        onclick="deleteProduct(${p.id}, '${p.name}')">
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>`;
+    }
+
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    loadProducts();
+</script>
+
+</body>
+</html>
